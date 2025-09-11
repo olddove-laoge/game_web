@@ -1,0 +1,332 @@
+<!-- leaderboard.html -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>游戏排行榜</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#ff8a00',
+                        secondary: '#da1b60',
+                        dark: 'rgba(0, 0, 0, 0.85)',
+                        light: 'rgba(255, 255, 255, 0.2)',
+                    },
+                    fontFamily: {
+                        game: ['Segoe UI', 'Tahoma', 'Geneva', 'Verdana', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .gradient-bg {
+                background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            }
+            .bg-blur {
+                backdrop-filter: blur(10px);
+            }
+            .text-shadow {
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            }
+            .rank-1 {
+                background: linear-gradient(to right, #ffd700, #ffcc00);
+            }
+            .rank-2 {
+                background: linear-gradient(to right, #c0c0c0, #b0b0b0);
+            }
+            .rank-3 {
+                background: linear-gradient(to right, #cd7f32, #b87333);
+            }
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen font-game text-white overflow-x-hidden">
+    <div class="container mx-auto px-4 py-12 max-w-7xl">
+        <!-- 标题区域 -->
+        <div class="text-center mb-16">
+            <h1 class="text-[clamp(2.5rem,5vw,4rem)] font-bold mb-4 text-shadow">
+                🏆 游戏排行榜 🏆
+            </h1>
+            <p class="text-[clamp(1rem,2vw,1.25rem)] max-w-2xl mx-auto text-white/80">
+                看看谁是最强的玩家！
+            </p>
+            <a href="index.html" class="mt-6 inline-block bg-gradient-to-r from-primary to-secondary text-white font-bold py-2 px-6 rounded-full shadow-lg hover:shadow-xl transition-all">
+                返回首页 <i class="fa fa-home ml-2"></i>
+            </a>
+        </div>
+
+        <!-- 贪吃蛇排行榜 -->
+        <div class="mb-16">
+            <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold mb-8 text-center text-shadow flex items-center justify-center">
+                <i class="fa fa-snake mr-4 text-green-300"></i>
+                贪吃蛇排行榜
+            </h2>
+            
+            <div class="bg-light rounded-2xl p-6 shadow-xl bg-blur">
+                <table class="w-full">
+                    <thead>
+                        <tr class="border-b border-white/20">
+                            <th class="text-left py-3 px-4">排名</th>
+                            <th class="text-left py-3 px-4">玩家</th>
+                            <th class="text-right py-3 px-4">分数</th>
+                            <th class="text-right py-3 px-4">日期</th>
+                        </tr>
+                    </thead>
+                    <tbody id="snake-leaderboard">
+                        <!-- 通过JS动态生成 -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 颜色误导排行榜 -->
+        <div class="mb-16">
+            <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold mb-8 text-center text-shadow flex items-center justify-center">
+                <i class="fa fa-palette mr-4 text-purple-300"></i>
+                颜色误导排行榜
+            </h2>
+            
+            <div class="bg-light rounded-2xl p-6 shadow-xl bg-blur">
+                <table class="w-full">
+                    <thead>
+                        <tr class="border-b border-white/20">
+                            <th class="text-left py-3 px-4">排名</th>
+                            <th class="text-left py-3 px-4">玩家</th>
+                            <th class="text-right py-3 px-4">分数</th>
+                            <th class="text-right py-3 px-4">日期</th>
+                        </tr>
+                    </thead>
+                    <tbody id="color-leaderboard">
+                        <!-- 通过JS动态生成 -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 记忆卡牌排行榜 -->
+        <div class="mb-16">
+            <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold mb-8 text-center text-shadow flex items-center justify-center">
+                <i class="fa fa-cards mr-4 text-blue-300"></i>
+                记忆卡牌排行榜
+            </h2>
+            
+            <!-- 简单难度 -->
+            <div class="mb-8">
+                <h3 class="text-xl font-bold mb-4 text-center">简单难度</h3>
+                <div class="bg-light rounded-2xl p-6 shadow-xl bg-blur">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b border-white/20">
+                                <th class="text-left py-3 px-4">排名</th>
+                                <th class="text-left py-3 px-4">玩家</th>
+                                <th class="text-right py-3 px-4">翻牌次数</th>
+                                <th class="text-right py-3 px-4">用时(秒)</th>
+                                <th class="text-right py-3 px-4">日期</th>
+                            </tr>
+                        </thead>
+                        <tbody id="memory-easy-leaderboard">
+                            <!-- 通过JS动态生成 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- 中等难度 -->
+            <div class="mb-8">
+                <h3 class="text-xl font-bold mb-4 text-center">中等难度</h3>
+                <div class="bg-light rounded-2xl p-6 shadow-xl bg-blur">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b border-white/20">
+                                <th class="text-left py-3 px-4">排名</th>
+                                <th class="text-left py-3 px-4">玩家</th>
+                                <th class="text-right py-3 px-4">翻牌次数</th>
+                                <th class="text-right py-3 px-4">用时(秒)</th>
+                                <th class="text-right py-3 px-4">日期</th>
+                            </tr>
+                        </thead>
+                        <tbody id="memory-medium-leaderboard">
+                            <!-- 通过JS动态生成 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- 困难难度 -->
+            <div>
+                <h3 class="text-xl font-bold mb-4 text-center">困难难度</h3>
+                <div class="bg-light rounded-2xl p-6 shadow-xl bg-blur">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b border-white/20">
+                                <th class="text-left py-3 px-4">排名</th>
+                                <th class="text-left py-3 px-4">玩家</th>
+                                <th class="text-right py-3 px-4">翻牌次数</th>
+                                <th class="text-right py-3 px-4">用时(秒)</th>
+                                <th class="text-right py-3 px-4">日期</th>
+                            </tr>
+                        </thead>
+                        <tbody id="memory-hard-leaderboard">
+                            <!-- 通过JS动态生成 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 拼图排行榜 -->
+        <div>
+            <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold mb-8 text-center text-shadow flex items-center justify-center">
+                <i class="fa fa-puzzle-piece mr-4 text-yellow-300"></i>
+                拼图排行榜
+            </h2>
+            
+            <!-- 3x3难度 -->
+            <div class="mb-8">
+                <h3 class="text-xl font-bold mb-4 text-center">3x3 难度</h3>
+                <div class="bg-light rounded-2xl p-6 shadow-xl bg-blur">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b border-white/20">
+                                <th class="text-left py-3 px-4">排名</th>
+                                <th class="text-left py-3 px-4">玩家</th>
+                                <th class="text-right py-3 px-4">移动次数</th>
+                                <th class="text-right py-3 px-4">用时(秒)</th>
+                                <th class="text-right py-3 px-4">日期</th>
+                            </tr>
+                        </thead>
+                        <tbody id="puzzle-easy-leaderboard">
+                            <!-- 通过JS动态生成 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- 4x4难度 -->
+            <div class="mb-8">
+                <h3 class="text-xl font-bold mb-4 text-center">4x4 难度</h3>
+                <div class="bg-light rounded-2xl p-6 shadow-xl bg-blur">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b border-white/20">
+                                <th class="text-left py-3 px-4">排名</th>
+                                <th class="text-left py-3 px-4">玩家</th>
+                                <th class="text-right py-3 px-4">移动次数</th>
+                                <th class="text-right py-3 px-4">用时(秒)</th>
+                                <th class="text-right py-3 px-4">日期</th>
+                            </tr>
+                        </thead>
+                        <tbody id="puzzle-medium-leaderboard">
+                            <!-- 通过JS动态生成 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- 5x5难度 -->
+            <div>
+                <h3 class="text-xl font-bold mb-4 text-center">5x5 难度</h3>
+                <div class="bg-light rounded-2xl p-6 shadow-xl bg-blur">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b border-white/20">
+                                <th class="text-left py-3 px-4">排名</th>
+                                <th class="text-left py-3 px-4">玩家</th>
+                                <th class="text-right py-3 px-4">移动次数</th>
+                                <th class="text-right py-3 px-4">用时(秒)</th>
+                                <th class="text-right py-3 px-4">日期</th>
+                            </tr>
+                        </thead>
+                        <tbody id="puzzle-hard-leaderboard">
+                            <!-- 通过JS动态生成 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 页脚 -->
+        <div class="mt-16 text-center text-white/60 text-sm">
+            <p>© 2023 益智游戏合集 | 锻炼你的大脑与反应能力</p>
+        </div>
+    </div>
+
+    <script>
+        // 从本地存储加载排行榜数据
+        document.addEventListener('DOMContentLoaded', () => {
+            // 加载贪吃蛇排行榜
+            loadLeaderboard('snake', 'snake-leaderboard', (a, b) => b.score - a.score);
+            
+            // 加载颜色误导排行榜
+            loadLeaderboard('color', 'color-leaderboard', (a, b) => b.score - a.score);
+            
+            // 加载记忆卡牌排行榜
+            loadLeaderboard('memory_easy', 'memory-easy-leaderboard', compareMemoryScores);
+            loadLeaderboard('memory_medium', 'memory-medium-leaderboard', compareMemoryScores);
+            loadLeaderboard('memory_hard', 'memory-hard-leaderboard', compareMemoryScores);
+            
+            // 加载拼图排行榜
+            loadLeaderboard('puzzle_easy', 'puzzle-easy-leaderboard', comparePuzzleScores);
+            loadLeaderboard('puzzle_medium', 'puzzle-medium-leaderboard', comparePuzzleScores);
+            loadLeaderboard('puzzle_hard', 'puzzle-hard-leaderboard', comparePuzzleScores);
+            
+            function loadLeaderboard(storageKey, elementId, compareFunction) {
+                const leaderboard = JSON.parse(localStorage.getItem(storageKey + '_leaderboard') || '[]');
+                leaderboard.sort(compareFunction);
+                
+                const tbody = document.getElementById(elementId);
+                tbody.innerHTML = '';
+                
+                leaderboard.slice(0, 10).forEach((entry, index) => {
+                    const tr = document.createElement('tr');
+                    tr.className = `border-b border-white/10 hover:bg-white/5 ${index < 3 ? 'rank-' + (index + 1) : ''}`;
+                    
+                    if (storageKey.startsWith('snake') || storageKey.startsWith('color')) {
+                        tr.innerHTML = `
+                            <td class="py-3 px-4">${index + 1}</td>
+                            <td class="py-3 px-4">${entry.player}</td>
+                            <td class="py-3 px-4 text-right">${entry.score}</td>
+                            <td class="py-3 px-4 text-right">${new Date(entry.date).toLocaleDateString()}</td>
+                        `;
+                    } else if (storageKey.startsWith('memory')) {
+                        tr.innerHTML = `
+                            <td class="py-3 px-4">${index + 1}</td>
+                            <td class="py-3 px-4">${entry.player}</td>
+                            <td class="py-3 px-4 text-right">${entry.moves}</td>
+                            <td class="py-3 px-4 text-right">${entry.time}</td>
+                            <td class="py-3 px-4 text-right">${new Date(entry.date).toLocaleDateString()}</td>
+                        `;
+                    } else if (storageKey.startsWith('puzzle')) {
+                        tr.innerHTML = `
+                            <td class="py-3 px-4">${index + 1}</td>
+                            <td class="py-3 px-4">${entry.player}</td>
+                            <td class="py-3 px-4 text-right">${entry.moves}</td>
+                            <td class="py-3 px-4 text-right">${entry.time}</td>
+                            <td class="py-3 px-4 text-right">${new Date(entry.date).toLocaleDateString()}</td>
+                        `;
+                    }
+                    
+                    tbody.appendChild(tr);
+                });
+            }
+            
+            function compareMemoryScores(a, b) {
+                if (a.moves !== b.moves) return a.moves - b.moves;
+                return a.time - b.time;
+            }
+            
+            function comparePuzzleScores(a, b) {
+                if (a.moves !== b.moves) return a.moves - b.moves;
+                return a.time - b.time;
+            }
+        });
+    </script>
+</body>
+</html>

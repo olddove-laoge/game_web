@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>颜色误导挑战</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#ff8a00',
+                        secondary: '#da1b60',
+                        dark: '#061c25',
+                        light: 'rgba(255, 255, 255, 0.2)',
+                    },
+                    fontFamily: {
+                        game: ['Segoe UI', 'Tahoma', 'Geneva', 'Verdana', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .text-shadow {
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            }
+            .bg-blur {
+                -webkit-backdrop-filter: blur(10px);
+                backdrop-filter: blur(10px);
+            }
+            .gradient-bg {
+                background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            }
+            .gradient-btn {
+                background: linear-gradient(to right, #ff8a00, #da1b60);
+            }
+            .option-hover {
+                transition: all 0.3s ease;
+            }
+            .option-hover:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            }
+            .option-active {
+                transform: scale(1.05);
+                box-shadow: 0 5px 15px rgba(255, 138, 0, 0.5);
+            }
+            .timer-bar {
+                transition: width 1s linear;
+            }
+            .correct-indicator {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                font-size: 3rem;
+                opacity: 0;
+                transition: opacity 0.3s ease;
+            }
+        }
+    </style>
+    <style>
+        /* 统一提交成绩区域样式（与贪吃蛇游戏保持一致） */
+        .score-submit {
+            display: flex;
+            flex-direction: column;
+            gap: 10px; /* 输入框与按钮间距 */
+            width: 100%;
+            max-width: 350px; /* 限制最大宽度 */
+            margin-top: 10px;
+        }
+
+        #player-name {
+            padding: 12px 15px; /* 统一内边距 */
+            border: none;
+            border-radius: 50px; /* 圆角设计 */
+            font-size: 1rem;
+            color: #333; /* 文本颜色 */
+            background: white; /* 白色背景 */
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2); /* 轻微阴影 */
+            outline: none;
+            transition: box-shadow 0.3s ease;
+        }
+
+        #player-name:focus {
+            box-shadow: 0 0 0 2px rgba(255, 138, 0, 0.5); /* 聚焦时高亮 */
+        }
+
+        #submit-score {
+            padding: 12px 25px; /* 与其他按钮统一内边距 */
+            border: none;
+            border-radius: 50px; /* 圆角 */
+            background: linear-gradient(to right, #ff8a00, #da1b60); /* 统一渐变色 */
+            color: white;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        #submit-score:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        #submit-score:active {
+            transform: translateY(1px);
+        }
+
+        /* 小屏幕适配 */
+        @media (max-width: 600px) {
+            .score-submit {
+                padding: 0 10px;
+            }
+
+            #player-name, #submit-score {
+                padding: 10px 15px;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen flex items-center justify-center p-4 font-game text-white overflow-x-hidden">
+    <!-- 主容器：限制最大宽度，避免超宽屏幕布局错乱 -->
+    <div class="container max-w-4xl mx-auto flex flex-col items-center gap-6">
+        <!-- 游戏标题：固定层级，避免被遮挡 -->
+        <div class="game-header text-center z-1">
+            <h1 class="text-[clamp(1.8rem,5vw,3rem)] font-bold mb-2 text-shadow">🎨 颜色误导挑战 🧠</h1>
+        </div>
+        
+        <!-- 分数面板：增加内边距，确保内容不拥挤 -->
+        <div class="score-board bg-light rounded-xl p-4 md:p-6 flex flex-wrap justify-center gap-6 md:gap-8 shadow-lg bg-blur w-full max-w-3xl">
+            <div class="score text-center min-w-[100px]">
+                <h2 class="text-lg mb-1">当前分数</h2>
+                <div class="score-value text-3xl font-bold">0</div>
+            </div>
+            <div class="high-score text-center min-w-[100px]">
+                <h2 class="text-lg mb-1">最高分数</h2>
+                <div class="high-score-value text-3xl font-bold">0</div>
+            </div>
+            <div class="current-streak text-center min-w-[100px]">
+                <h2 class="text-lg mb-1">当前连击</h2>
+                <div class="streak-value text-3xl font-bold">0</div>
+            </div>
+        </div>
+        
+        <!-- 计时器：宽度100%，确保与游戏区域对齐 -->
+        <div class="w-full max-w-3xl bg-dark/50 rounded-full h-3 overflow-hidden">
+            <div id="timer-bar" class="timer-bar h-full gradient-bg w-full"></div>
+        </div>
+        
+        <!-- 游戏区域：增加最小高度，确保内容不溢出；相对定位作为子元素容器 -->
+        <div class="game-area w-full max-w-3xl bg-dark rounded-xl p-4 md:p-6 shadow-xl relative min-h-[400px] md:min-h-[450px]">
+            <!-- 问题显示：增加最小高度，确保文字不重叠；居中对齐 -->
+            <div class="question text-center text-[clamp(1.2rem,3vw,2rem)] mb-6 md:mb-8 min-h-[120px] flex items-center justify-center px-2">
+                准备开始挑战！
+            </div>
+            
+            <!-- 选项区域：细化响应式网格，小屏1列、中屏2列、大屏4列；增加间距 -->
+            <div class="options grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <!-- 选项会通过JS动态生成 -->
+            </div>
+            
+            <!-- 开始屏幕：绝对定位覆盖整个游戏区域，z-index确保在最上层 -->
+            <div id="start-screen" class="absolute inset-0 bg-dark/90 rounded-xl flex flex-col items-center justify-center gap-6 p-6 text-center z-10">
+                <h2 class="text-2xl font-bold">颜色误导挑战</h2>
+                <p class="mb-4 text-base md:text-lg">注意区分文字本身和它的颜色！</p>
+                <!-- 说明容器：限制最大宽度，避免文字溢出 -->
+                <div class="instructions bg-light/50 p-4 rounded-lg text-left max-w-sm text-sm md:text-base">
+                    <p class="mb-2"><i class="fa fa-check-circle text-primary mr-2"></i>回答关于文字颜色或文字内容的问题</p>
+                    <p class="mb-2"><i class="fa fa-check-circle text-primary mr-2"></i>限时回答，时间会随着得分增加而减少</p>
+                    <p><i class="fa fa-check-circle text-primary mr-2"></i>错误或超时都会导致游戏结束</p>
+                </div>
+                <button id="start-button" class="gradient-btn text-white font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-xl transition-all">
+                    开始游戏
+                </button>
+            </div>
+            
+            <!-- 游戏结束屏幕：同开始屏幕，确保覆盖和层级 -->
+            <div id="game-over-screen" class="absolute inset-0 bg-dark/90 rounded-xl flex flex-col items-center justify-center gap-4 p-6 text-center hidden z-10">
+                <h2 class="text-2xl font-bold text-secondary">游戏结束!</h2>
+                <p class="text-xl">你的分数: <span class="final-score font-bold">0</span></p>
+                <p class="mb-4">最高连击: <span class="max-streak font-bold">0</span></p>
+                <!-- 提交成绩：使用统一样式的提交区域 -->
+                <div class="score-submit mb-4 hidden" id="score-submit">
+                    <input type="text" id="player-name" placeholder="输入你的昵称" />
+                    <button id="submit-score">提交成绩</button>
+                </div>
+                <button id="restart-button" class="gradient-btn text-white font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-xl transition-all">
+                    重新开始
+                </button>
+            </div>
+        </div>
+        
+        <!-- 控制按钮：居中显示，避免与其他元素重叠 -->
+        <div class="controls flex gap-4 mt-2">
+            <a href="index.html" class="gradient-btn text-white font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-xl transition-all flex items-center justify-center">
+                返回首页 <i class="fa fa-home ml-2"></i>
+            </a>
+            <button id="pause-button" class="gradient-btn text-white font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-xl transition-all hidden">
+                暂停游戏
+            </button>
+        </div>
+        
+        <!-- 游戏说明：限制最大宽度，避免超宽屏幕文字过长 -->
+        <div class="instructions bg-light rounded-xl p-4 md:p-5 shadow-lg bg-blur max-w-2xl w-full">
+            <h2 class="text-xl font-bold mb-3 text-primary">游戏说明</h2>
+            <p class="mb-2">游戏会显示颜色与文字内容不同的汉字（例如红色的"黄"字）</p>
+            <p class="mb-2">会随机出现两种问题：</p>
+            <ul class="list-disc list-inside mb-2 pl-4">
+                <li>下列哪个字是 <span class="text-red-500 font-bold">红</span> 色的？</li>
+                <li>下列哪个字是 " <span class="font-bold">蓝</span> "？</li>
+            </ul>
+            <p>初始答题时间为7秒，答对5、10、25题后分别变为6、5、4秒</p>
+        </div>
+    </div>
+
+    <script>
+        // 原有JavaScript代码保持不变
+        document.addEventListener('DOMContentLoaded', () => {
+            // 游戏配置和状态
+            const gameConfig = {
+                baseTime: 7,          // 初始时间（秒）
+                timeLevels: [5, 10, 25], // 时间减少的分数节点
+                timeReductions: [1, 1, 1], // 每个节点减少的时间
+                pointsPerQuestion: 20, // 每题分数
+                optionsCount: 4,       // 选项数量
+                colors: {
+                    '红': '#FF5252',
+                    '黄': '#FFD700',
+                    '蓝': '#42A5F5',
+                    '绿': '#4CAF50',
+                    '紫': '#9C27B0',
+                    '橙': '#FF9800',
+                    '黑': '#212121',
+                    '白': '#FFFFFF'
+                }
+            };
+            
+            // 游戏状态
+            let gameState = {
+                score: 0,
+                highScore: localStorage.getItem('colorChallengeHighScore') || 0,
+                currentStreak: 0,
+                maxStreak: 0,
+                gameRunning: false,
+                gamePaused: false,
+                currentTime: gameConfig.baseTime,
+                timer: null,
+                currentQuestion: null,
+                currentOptions: []
+            };
+            
+            // DOM元素
+            const elements = {
+                scoreValue: document.querySelector('.score-value'),
+                highScoreValue: document.querySelector('.high-score-value'),
+                streakValue: document.querySelector('.streak-value'),
+                question: document.querySelector('.question'),
+                optionsContainer: document.querySelector('.options'),
+                timerBar: document.getElementById('timer-bar'),
+                startScreen: document.getElementById('start-screen'),
+                gameOverScreen: document.getElementById('game-over-screen'),
+                finalScore: document.querySelector('.final-score'),
+                maxStreak: document.querySelector('.max-streak'),
+                startButton: document.getElementById('start-button'),
+                pauseButton: document.getElementById('pause-button'),
+                restartButton: document.getElementById('restart-button'),
+                scoreSubmit: document.getElementById('score-submit'),
+                playerName: document.getElementById('player-name'),
+                submitScore: document.getElementById('submit-score')
+            };
+            
+            // 初始化最高分
+            elements.highScoreValue.textContent = gameState.highScore;
+            
+            // 生成随机问题
+            function generateQuestion() {
+                const colorNames = Object.keys(gameConfig.colors);
+                const questionType = Math.floor(Math.random() * 2); // 0=问颜色，1=问文字
+                const target = colorNames[Math.floor(Math.random() * colorNames.length)];
+                
+                // 生成问题文本
+                let questionText;
+                if (questionType === 0) {
+                    questionText = `下列哪个字是 <span style="color: ${gameConfig.colors[target]}; font-weight: bold">${target}</span> 色的？`;
+                } else {
+                    questionText = `下列哪个字是 " <span style="font-weight: bold">${target}</span> "？`;
+                }
+                
+                // 生成选项（确保无重复正确选项）
+                const options = [];
+                const usedCombinations = new Set();
+                let correctOption;
+                
+                // 生成正确选项
+                if (questionType === 0) {
+                    // 问颜色：文字任意，颜色=目标
+                    const correctText = colorNames[Math.floor(Math.random() * colorNames.length)];
+                    correctOption = { text: correctText, color: target, isCorrect: true };
+                } else {
+                    // 问文字：文字=目标，颜色≠目标
+                    let correctColor;
+                    do {
+                        correctColor = colorNames[Math.floor(Math.random() * colorNames.length)];
+                    } while (correctColor === target);
+                    correctOption = { text: target, color: correctColor, isCorrect: true };
+                }
+                options.push(correctOption);
+                usedCombinations.add(`${correctOption.text}-${correctOption.color}`);
+                
+                // 生成错误选项（确保不与正确选项冲突）
+                while (options.length < gameConfig.optionsCount) {
+                    const text = colorNames[Math.floor(Math.random() * colorNames.length)];
+                    let color;
+                    do {
+                        color = colorNames[Math.floor(Math.random() * colorNames.length)];
+                    } while (color === text); // 避免颜色与文字相同
+                    
+                    // 确保错误选项不会成为正确答案
+                    const isPotentiallyCorrect = 
+                        (questionType === 0 && color === target) || 
+                        (questionType === 1 && text === target);
+                    
+                    const combination = `${text}-${color}`;
+                    if (!usedCombinations.has(combination) && !isPotentiallyCorrect) {
+                        usedCombinations.add(combination);
+                        options.push({ text: text, color: color, isCorrect: false });
+                    }
+                }
+                
+                // 打乱选项顺序
+                shuffleArray(options);
+                return { text: questionText, type: questionType, target: target, options: options, correctOption: correctOption };
+            }
+            
+            // 打乱数组
+            function shuffleArray(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+                return array;
+            }
+            
+            // 显示问题和选项
+            function displayQuestion(question) {
+                elements.question.innerHTML = question.text;
+                elements.optionsContainer.innerHTML = '';
+                
+                question.options.forEach(option => {
+                    const optionElement = document.createElement('div');
+                    optionElement.className = 'option option-hover bg-light rounded-lg p-5 text-center cursor-pointer relative min-h-[120px] flex items-center justify-center';
+                    optionElement.style.color = gameConfig.colors[option.color];
+                    optionElement.style.fontSize = '1.5rem';
+                    optionElement.style.fontWeight = 'bold';
+                    optionElement.textContent = option.text;
+                    optionElement.dataset.correct = option.isCorrect;
+                    
+                    // 正确/错误指示器
+                    const indicator = document.createElement('div');
+                    indicator.className = 'correct-indicator';
+                    indicator.textContent = option.isCorrect ? '✓' : '✗';
+                    indicator.style.color = option.isCorrect ? '#4CAF50' : '#F44336';
+                    optionElement.appendChild(indicator);
+                    
+                    // 点击事件
+                    optionElement.addEventListener('click', () => {
+                        if (gameState.gameRunning && !gameState.gamePaused) {
+                            handleOptionSelection(optionElement, option.isCorrect);
+                        }
+                    });
+                    
+                    elements.optionsContainer.appendChild(optionElement);
+                });
+            }
+            
+            // 处理选项选择
+            function handleOptionSelection(element, isCorrect) {
+                clearInterval(gameState.timer);
+                
+                // 禁用所有选项点击
+                document.querySelectorAll('.option').forEach(opt => {
+                    opt.classList.remove('option-active');
+                    opt.style.pointerEvents = 'none';
+                    // 显示正确选项指示器
+                    const indicator = opt.querySelector('.correct-indicator');
+                    if (opt.dataset.correct === 'true') {
+                        indicator.style.opacity = '1';
+                    }
+                });
+                // 高亮选中选项
+                element.classList.add('option-active');
+                
+                if (isCorrect) {
+                    // 答对：更新分数和连击
+                    gameState.score += gameConfig.pointsPerQuestion;
+                    gameState.currentStreak++;
+                    gameState.maxStreak = Math.max(gameState.maxStreak, gameState.currentStreak);
+                    updateScoreDisplay();
+                    updateGameSpeed(); // 检查是否需要减少时间
+                    // 延迟显示下一题
+                    setTimeout(() => nextQuestion(), 800);
+                } else {
+                    // 答错：延迟显示游戏结束
+                    setTimeout(() => gameOver(), 1200);
+                }
+            }
+            
+            // 更新游戏速度（时间限制）
+            function updateGameSpeed() {
+                const correctAnswers = gameState.score / gameConfig.pointsPerQuestion;
+                let newTime = gameConfig.baseTime;
+                
+                // 根据答对题目数量减少时间
+                for (let i = 0; i < gameConfig.timeLevels.length; i++) {
+                    if (correctAnswers >= gameConfig.timeLevels[i]) {
+                        newTime -= gameConfig.timeReductions[i];
+                    } else {
+                        break;
+                    }
+                }
+                gameState.currentTime = newTime;
+            }
+            
+            // 下一题
+            function nextQuestion() {
+                const question = generateQuestion();
+                gameState.currentQuestion = question;
+                displayQuestion(question);
+                startTimer();
+            }
+            
+            // 开始计时器
+            function startTimer() {
+                clearInterval(gameState.timer);
+                let timeLeft = gameState.currentTime;
+                elements.timerBar.style.width = '100%';
+                elements.timerBar.style.background = 'linear-gradient(to right, #ff8a00, #da1b60)';
+                
+                // 每秒更新计时器宽度
+                gameState.timer = setInterval(() => {
+                    timeLeft -= 0.1;
+                    const percentage = (timeLeft / gameState.currentTime) * 100;
+                    elements.timerBar.style.width = `${percentage}%`;
+                    
+                    // 时间不足30%时变红提醒
+                    if (percentage < 30) {
+                        elements.timerBar.style.background = 'linear-gradient(to right, #ff4757, #ff6b81)';
+                    }
+                    
+                    // 超时结束游戏
+                    if (timeLeft <= 0) {
+                        clearInterval(gameState.timer);
+                        gameOver();
+                    }
+                }, 100);
+            }
+            
+            // 更新分数显示
+            function updateScoreDisplay() {
+                elements.scoreValue.textContent = gameState.score;
+                elements.streakValue.textContent = gameState.currentStreak;
+                
+                // 更新最高分并存储到localStorage
+                if (gameState.score > gameState.highScore) {
+                    gameState.highScore = gameState.score;
+                    elements.highScoreValue.textContent = gameState.highScore;
+                    localStorage.setItem('colorChallengeHighScore', gameState.highScore);
+                }
+            }
+            
+            // 开始游戏
+            function startGame() {
+                // 重置游戏状态
+                gameState.score = 0;
+                gameState.currentStreak = 0;
+                gameState.maxStreak = 0;
+                gameState.currentTime = gameConfig.baseTime;
+                
+                // 更新显示
+                updateScoreDisplay();
+                
+                // 隐藏开始屏幕，显示暂停按钮
+                elements.startScreen.style.display = 'none';
+                elements.pauseButton.classList.remove('hidden');
+                
+                // 启动游戏
+                gameState.gameRunning = true;
+                gameState.gamePaused = false;
+                nextQuestion();
+            }
+            
+            // 暂停/继续游戏
+            function togglePause() {
+                if (!gameState.gameRunning) return;
+                
+                if (gameState.gamePaused) {
+                    // 继续游戏：恢复计时器和选项点击
+                    gameState.gamePaused = false;
+                    elements.pauseButton.textContent = '暂停游戏';
+                    startTimer();
+                    document.querySelectorAll('.option').forEach(opt => {
+                        opt.style.pointerEvents = 'auto';
+                    });
+                } else {
+                    // 暂停游戏：停止计时器和禁用选项点击
+                    gameState.gamePaused = true;
+                    elements.pauseButton.textContent = '继续游戏';
+                    clearInterval(gameState.timer);
+                    document.querySelectorAll('.option').forEach(opt => {
+                        opt.style.pointerEvents = 'none';
+                    });
+                }
+            }
+            
+            // 游戏结束
+            function gameOver() {
+                gameState.gameRunning = false;
+                clearInterval(gameState.timer);
+                
+                // 更新最高分
+                if (gameState.score > gameState.highScore) {
+                    gameState.highScore = gameState.score;
+                    elements.highScoreValue.textContent = gameState.highScore;
+                    localStorage.setItem('colorChallengeHighScore', gameState.highScore);
+                }
+                
+                // 显示游戏结束屏幕
+                elements.finalScore.textContent = gameState.score;
+                elements.maxStreak.textContent = gameState.maxStreak;
+                elements.gameOverScreen.style.display = 'flex';
+                elements.pauseButton.classList.add('hidden');
+                elements.scoreSubmit.classList.remove('hidden');
+            }
+            
+            // 提交成绩到localStorage
+            function submitScore() {
+                const playerName = elements.playerName.value || '匿名玩家';
+                const scoreData = {
+                    player: playerName,
+                    score: gameState.score,
+                    streak: gameState.maxStreak,
+                    date: new Date().toLocaleString()
+                };
+                
+                // 从localStorage获取排行榜，若无则创建空数组
+                const leaderboard = JSON.parse(localStorage.getItem('colorChallengeLeaderboard') || '[]');
+                leaderboard.push(scoreData);
+                // 按分数降序排序
+                leaderboard.sort((a, b) => b.score - a.score);
+                // 存储回localStorage
+                localStorage.setItem('colorChallengeLeaderboard', JSON.stringify(leaderboard));
+                
+                // 提交后隐藏输入框
+                elements.scoreSubmit.classList.add('hidden');
+            }
+            
+            // 事件监听
+            elements.startButton.addEventListener('click', startGame);
+            elements.pauseButton.addEventListener('click', togglePause);
+            elements.restartButton.addEventListener('click', () => {
+                elements.gameOverScreen.style.display = 'none';
+                startGame();
+            });
+            elements.submitScore.addEventListener('click', submitScore);
+            
+            // 键盘控制：空格键暂停/继续
+            document.addEventListener('keydown', (e) => {
+                if (e.key === ' ' && gameState.gameRunning) {
+                    e.preventDefault();
+                    togglePause();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,182 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>益智游戏合集</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#ff8a00',
+                        secondary: '#da1b60',
+                        dark: 'rgba(0, 0, 0, 0.85)',
+                        light: 'rgba(255, 255, 255, 0.2)',
+                    },
+                    fontFamily: {
+                        game: ['Segoe UI', 'Tahoma', 'Geneva', 'Verdana', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .gradient-bg {
+                background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            }
+            .card-hover {
+                transition: all 0.3s ease;
+            }
+            .card-hover:hover {
+                transform: translateY(-10px);
+                box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+            }
+            .bg-blur {
+                backdrop-filter: blur(10px);
+            }
+            .text-shadow {
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            }
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen font-game text-white overflow-x-hidden">
+    <div class="container mx-auto px-4 py-12 max-w-7xl">
+        <!-- 标题区域 -->
+        <div class="text-center mb-16">
+            <h1 class="text-[clamp(2.5rem,5vw,4rem)] font-bold mb-4 text-shadow">
+                🎮 益智游戏合集 🧠
+            </h1>
+            <p class="text-[clamp(1rem,2vw,1.25rem)] max-w-2xl mx-auto text-white/80">
+                挑战你的反应能力与记忆力，选择喜欢的游戏开始玩吧！
+            </p>
+            <a href="leaderboard.html" class="mt-6 inline-block bg-gradient-to-r from-primary to-secondary text-white font-bold py-2 px-6 rounded-full shadow-lg hover:shadow-xl transition-all">
+                查看排行榜 <i class="fa fa-trophy ml-2"></i>
+            </a>
+        </div>
+
+        <!-- 游戏分类 - 反应能力类 -->
+        <div class="mb-16">
+            <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold mb-8 text-center text-shadow flex items-center justify-center">
+                <i class="fa fa-bolt mr-4 text-yellow-300"></i>
+                反应能力类
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- 贪吃蛇游戏卡片 -->
+                <a href="snake.html" class="block">
+                    <div class="bg-light rounded-2xl p-6 shadow-xl bg-blur card-hover h-full flex flex-col">
+                        <div class="flex justify-between items-start mb-4">
+                            <h3 class="text-2xl font-bold text-primary">🐍 贪吃蛇小游戏</h3>
+                            <span class="bg-primary/20 text-white px-3 py-1 rounded-full text-sm">反应</span>
+                        </div>
+                        <p class="text-white/80 mb-6 flex-grow">
+                            控制蛇的移动，吃食物增长得分，小心不要撞到墙壁或自己的身体！
+                        </p>
+                        <div class="mt-auto">
+                            <button class="w-full py-3 px-6 bg-gradient-to-r from-primary to-secondary rounded-full font-bold text-white shadow-lg hover:shadow-xl transition-all">
+                                开始游戏 <i class="fa fa-arrow-right ml-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                </a>
+                
+                <!-- 颜色误导游戏卡片 -->
+                <a href="color.html" class="block">
+                    <div class="bg-light rounded-2xl p-6 shadow-xl bg-blur card-hover h-full flex flex-col">
+                        <div class="flex justify-between items-start mb-4">
+                            <h3 class="text-2xl font-bold text-primary">🎨 颜色误导挑战</h3>
+                            <span class="bg-primary/20 text-white px-3 py-1 rounded-full text-sm">反应</span>
+                        </div>
+                        <p class="text-white/80 mb-6 flex-grow">
+                            注意区分文字本身和它的颜色，限时回答问题，考验你的反应速度！
+                        </p>
+                        <div class="mt-auto">
+                            <button class="w-full py-3 px-6 bg-gradient-to-r from-primary to-secondary rounded-full font-bold text-white shadow-lg hover:shadow-xl transition-all">
+                                开始游戏 <i class="fa fa-arrow-right ml-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- 游戏分类 - 记忆智力类 -->
+        <div>
+            <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold mb-8 text-center text-shadow flex items-center justify-center">
+                <i class="fa fa-brain mr-4 text-blue-300"></i>
+                记忆智力类
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- 拼图游戏卡片 -->
+                <a href="puzzle.html" class="block">
+                    <div class="bg-light rounded-2xl p-6 shadow-xl bg-blur card-hover h-full flex flex-col">
+                        <div class="flex justify-between items-start mb-4">
+                            <h3 class="text-2xl font-bold text-primary">🧩 拼图小游戏</h3>
+                            <span class="bg-primary/20 text-white px-3 py-1 rounded-full text-sm">智力</span>
+                        </div>
+                        <p class="text-white/80 mb-6 flex-grow">
+                            拖动拼图碎片到正确位置，将所有碎片拼回原图，完成挑战！
+                        </p>
+                        <div class="mt-auto">
+                            <button class="w-full py-3 px-6 bg-gradient-to-r from-primary to-secondary rounded-full font-bold text-white shadow-lg hover:shadow-xl transition-all">
+                                开始游戏 <i class="fa fa-arrow-right ml-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                </a>
+                
+                <!-- 记忆卡牌游戏卡片 -->
+                <a href="memory_card.html" class="block">
+                    <div class="bg-light rounded-2xl p-6 shadow-xl bg-blur card-hover h-full flex flex-col">
+                        <div class="flex justify-between items-start mb-4">
+                            <h3 class="text-2xl font-bold text-primary">🃏 翻记忆卡牌</h3>
+                            <span class="bg-primary/20 text-white px-3 py-1 rounded-full text-sm">记忆</span>
+                        </div>
+                        <p class="text-white/80 mb-6 flex-grow">
+                            翻开花样相同的卡牌进行匹配，翻牌次数越少，用时越短，成绩越好！
+                        </p>
+                        <div class="mt-auto">
+                            <button class="w-full py-3 px-6 bg-gradient-to-r from-primary to-secondary rounded-full font-bold text-white shadow-lg hover:shadow-xl transition-all">
+                                开始游戏 <i class="fa fa-arrow-right ml-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- 页脚 -->
+        <div class="mt-16 text-center text-white/60 text-sm">
+            <p>© 2023 益智游戏合集 | 锻炼你的大脑与反应能力</p>
+        </div>
+    </div>
+
+    <script>
+        // 添加页面载入动画效果
+        document.addEventListener('DOMContentLoaded', () => {
+            const cards = document.querySelectorAll('.card-hover');
+            
+            // 为每个卡片添加渐入动画
+            cards.forEach((card, index) => {
+                setTimeout(() => {
+                    card.style.opacity = '0';
+                    card.style.transform = 'translateY(20px)';
+                    
+                    setTimeout(() => {
+                        card.style.transition = 'all 0.5s ease-out';
+                        card.style.opacity = '1';
+                        card.style.transform = 'translateY(0)';
+                    }, 50);
+                }, 100 * index);
+            });
+        });
+    </script>
+</body>
+</html>
