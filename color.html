@@ -200,14 +200,11 @@
             </div>
         </div>
         
-        <!-- 控制按钮：居中显示，避免与其他元素重叠 -->
+        <!-- 控制按钮：移除暂停按钮，仅保留返回首页 -->
         <div class="controls flex gap-4 mt-2">
             <a href="index.html" class="gradient-btn text-white font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-xl transition-all flex items-center justify-center">
                 返回首页 <i class="fa fa-home ml-2"></i>
             </a>
-            <button id="pause-button" class="gradient-btn text-white font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-xl transition-all hidden">
-                暂停游戏
-            </button>
         </div>
         
         <!-- 游戏说明：限制最大宽度，避免超宽屏幕文字过长 -->
@@ -219,18 +216,17 @@
                 <li>下列哪个字是 <span class="text-red-500 font-bold">红</span> 色的？</li>
                 <li>下列哪个字是 " <span class="font-bold">蓝</span> "？</li>
             </ul>
-            <p>初始答题时间为7秒，答对5、10、25题后分别变为6、5、4秒</p>
+            <p>初始答题时间为5秒，答对5、10、25题后分别变为4、3、2秒</p>
         </div>
     </div>
 
     <script>
-        // 原有JavaScript代码保持不变
         document.addEventListener('DOMContentLoaded', () => {
-            // 游戏配置和状态
+            // 游戏配置和状态：移除gamePaused相关状态
             const gameConfig = {
-                baseTime: 7,          // 初始时间（秒）
+                baseTime: 5,          // 初始时间（秒）
                 timeLevels: [5, 10, 25], // 时间减少的分数节点
-                timeReductions: [1, 1, 1], // 每个节点减少的时间
+                timeReductions: [1, 2, 2], // 每个节点减少的时间
                 pointsPerQuestion: 20, // 每题分数
                 optionsCount: 4,       // 选项数量
                 colors: {
@@ -245,21 +241,22 @@
                 }
             };
             
-            // 游戏状态
+            // 游戏状态：删除gamePaused属性
             let gameState = {
                 score: 0,
                 highScore: localStorage.getItem('colorChallengeHighScore') || 0,
                 currentStreak: 0,
                 maxStreak: 0,
                 gameRunning: false,
-                gamePaused: false,
                 currentTime: gameConfig.baseTime,
                 timer: null,
                 currentQuestion: null,
-                currentOptions: []
+                currentOptions: [],
+                startTime: 0, // 添加开始时间记录
+                animationFrame: null // 添加动画帧引用
             };
             
-            // DOM元素
+            // DOM元素：移除pauseButton相关引用
             const elements = {
                 scoreValue: document.querySelector('.score-value'),
                 highScoreValue: document.querySelector('.high-score-value'),
@@ -272,7 +269,6 @@
                 finalScore: document.querySelector('.final-score'),
                 maxStreak: document.querySelector('.max-streak'),
                 startButton: document.getElementById('start-button'),
-                pauseButton: document.getElementById('pause-button'),
                 restartButton: document.getElementById('restart-button'),
                 scoreSubmit: document.getElementById('score-submit'),
                 playerName: document.getElementById('player-name'),
@@ -296,15 +292,20 @@
                     questionText = `下列哪个字是 " <span style="font-weight: bold">${target}</span> "？`;
                 }
                 
-                // 生成选项（确保无重复正确选项）
+                // 生成选项（确保包含必要的误导选项）
                 const options = [];
                 const usedCombinations = new Set();
-                let correctOption;
                 
                 // 生成正确选项
+                let correctOption;
                 if (questionType === 0) {
                     // 问颜色：文字任意，颜色=目标
-                    const correctText = colorNames[Math.floor(Math.random() * colorNames.length)];
+                    // 确保文字不是目标颜色本身，增加难度
+                    let correctText;
+                    do {
+                        correctText = colorNames[Math.floor(Math.random() * colorNames.length)];
+                    } while (correctText === target);
+                    
                     correctOption = { text: correctText, color: target, isCorrect: true };
                 } else {
                     // 问文字：文字=目标，颜色≠目标
@@ -312,12 +313,36 @@
                     do {
                         correctColor = colorNames[Math.floor(Math.random() * colorNames.length)];
                     } while (correctColor === target);
+                    
                     correctOption = { text: target, color: correctColor, isCorrect: true };
                 }
                 options.push(correctOption);
                 usedCombinations.add(`${correctOption.text}-${correctOption.color}`);
                 
-                // 生成错误选项（确保不与正确选项冲突）
+                // 生成误导选项
+                if (questionType === 0) {
+                    // 对于颜色问题：添加一个文字为目标颜色但颜色不是目标的选项
+                    let misleadingColor;
+                    do {
+                        misleadingColor = colorNames[Math.floor(Math.random() * colorNames.length)];
+                    } while (misleadingColor === target);
+                    
+                    const misleadingOption = { text: target, color: misleadingColor, isCorrect: false };
+                    options.push(misleadingOption);
+                    usedCombinations.add(`${misleadingOption.text}-${misleadingOption.color}`);
+                } else {
+                    // 对于文字问题：添加一个颜色为目标颜色但文字不是目标的选项
+                    let misleadingText;
+                    do {
+                        misleadingText = colorNames[Math.floor(Math.random() * colorNames.length)];
+                    } while (misleadingText === target);
+                    
+                    const misleadingOption = { text: misleadingText, color: target, isCorrect: false };
+                    options.push(misleadingOption);
+                    usedCombinations.add(`${misleadingOption.text}-${misleadingOption.color}`);
+                }
+                
+                // 生成其他错误选项（确保不与正确选项和误导选项冲突）
                 while (options.length < gameConfig.optionsCount) {
                     const text = colorNames[Math.floor(Math.random() * colorNames.length)];
                     let color;
@@ -351,7 +376,7 @@
                 return array;
             }
             
-            // 显示问题和选项
+            // 显示问题和选项：移除暂停相关的选项点击控制
             function displayQuestion(question) {
                 elements.question.innerHTML = question.text;
                 elements.optionsContainer.innerHTML = '';
@@ -372,9 +397,9 @@
                     indicator.style.color = option.isCorrect ? '#4CAF50' : '#F44336';
                     optionElement.appendChild(indicator);
                     
-                    // 点击事件
+                    // 点击事件：移除gamePaused判断
                     optionElement.addEventListener('click', () => {
-                        if (gameState.gameRunning && !gameState.gamePaused) {
+                        if (gameState.gameRunning) {
                             handleOptionSelection(optionElement, option.isCorrect);
                         }
                     });
@@ -383,9 +408,9 @@
                 });
             }
             
-            // 处理选项选择
+            // 处理选项选择：移除暂停相关逻辑
             function handleOptionSelection(element, isCorrect) {
-                clearInterval(gameState.timer);
+                clearTimer();
                 
                 // 禁用所有选项点击
                 document.querySelectorAll('.option').forEach(opt => {
@@ -415,6 +440,18 @@
                 }
             }
             
+            // 清除计时器
+            function clearTimer() {
+                if (gameState.timer) {
+                    clearInterval(gameState.timer);
+                    gameState.timer = null;
+                }
+                if (gameState.animationFrame) {
+                    cancelAnimationFrame(gameState.animationFrame);
+                    gameState.animationFrame = null;
+                }
+            }
+            
             // 更新游戏速度（时间限制）
             function updateGameSpeed() {
                 const correctAnswers = gameState.score / gameConfig.pointsPerQuestion;
@@ -428,7 +465,7 @@
                         break;
                     }
                 }
-                gameState.currentTime = newTime;
+                gameState.currentTime = Math.max(2, newTime); // 确保时间不低于2秒
             }
             
             // 下一题
@@ -439,18 +476,33 @@
                 startTimer();
             }
             
-            // 开始计时器
+            // 开始计时器：使用requestAnimationFrame实现更精确的计时
             function startTimer() {
-                clearInterval(gameState.timer);
-                let timeLeft = gameState.currentTime;
+                clearTimer();
+                
+                // 重置计时条
                 elements.timerBar.style.width = '100%';
                 elements.timerBar.style.background = 'linear-gradient(to right, #ff8a00, #da1b60)';
+                elements.timerBar.style.transition = 'none'; // 先禁用过渡效果
                 
-                // 每秒更新计时器宽度
-                gameState.timer = setInterval(() => {
-                    timeLeft -= 0.1;
-                    const percentage = (timeLeft / gameState.currentTime) * 100;
-                    elements.timerBar.style.width = `${percentage}%`;
+                // 强制重绘
+                elements.timerBar.offsetHeight;
+                
+                // 重新启用过渡效果
+                elements.timerBar.style.transition = 'width 1s linear';
+                
+                const startTime = Date.now();
+                const totalTime = gameState.currentTime * 1000; // 转换为毫秒
+                
+                function updateTimer() {
+                    if (!gameState.gameRunning) return;
+                    
+                    const elapsedTime = Date.now() - startTime;
+                    const remainingTime = totalTime - elapsedTime;
+                    const percentage = (remainingTime / totalTime) * 100;
+                    
+                    // 更新计时条
+                    elements.timerBar.style.width = `${Math.max(0, percentage)}%`;
                     
                     // 时间不足30%时变红提醒
                     if (percentage < 30) {
@@ -458,11 +510,24 @@
                     }
                     
                     // 超时结束游戏
-                    if (timeLeft <= 0) {
-                        clearInterval(gameState.timer);
+                    if (remainingTime <= 0) {
+                        gameOver();
+                        return;
+                    }
+                    
+                    // 继续更新
+                    gameState.animationFrame = requestAnimationFrame(updateTimer);
+                }
+                
+                // 启动计时器
+                gameState.animationFrame = requestAnimationFrame(updateTimer);
+                
+                // 设置一个备用定时器，防止requestAnimationFrame出现问题
+                gameState.timer = setTimeout(() => {
+                    if (gameState.gameRunning) {
                         gameOver();
                     }
-                }, 100);
+                }, totalTime + 100); // 额外增加100ms容错时间
             }
             
             // 更新分数显示
@@ -478,7 +543,7 @@
                 }
             }
             
-            // 开始游戏
+            // 开始游戏：移除暂停按钮显示逻辑
             function startGame() {
                 // 重置游戏状态
                 gameState.score = 0;
@@ -489,43 +554,18 @@
                 // 更新显示
                 updateScoreDisplay();
                 
-                // 隐藏开始屏幕，显示暂停按钮
+                // 隐藏开始屏幕
                 elements.startScreen.style.display = 'none';
-                elements.pauseButton.classList.remove('hidden');
                 
                 // 启动游戏
                 gameState.gameRunning = true;
-                gameState.gamePaused = false;
                 nextQuestion();
             }
             
-            // 暂停/继续游戏
-            function togglePause() {
-                if (!gameState.gameRunning) return;
-                
-                if (gameState.gamePaused) {
-                    // 继续游戏：恢复计时器和选项点击
-                    gameState.gamePaused = false;
-                    elements.pauseButton.textContent = '暂停游戏';
-                    startTimer();
-                    document.querySelectorAll('.option').forEach(opt => {
-                        opt.style.pointerEvents = 'auto';
-                    });
-                } else {
-                    // 暂停游戏：停止计时器和禁用选项点击
-                    gameState.gamePaused = true;
-                    elements.pauseButton.textContent = '继续游戏';
-                    clearInterval(gameState.timer);
-                    document.querySelectorAll('.option').forEach(opt => {
-                        opt.style.pointerEvents = 'none';
-                    });
-                }
-            }
-            
-            // 游戏结束
+            // 游戏结束：移除暂停按钮隐藏逻辑
             function gameOver() {
                 gameState.gameRunning = false;
-                clearInterval(gameState.timer);
+                clearTimer();
                 
                 // 更新最高分
                 if (gameState.score > gameState.highScore) {
@@ -538,7 +578,6 @@
                 elements.finalScore.textContent = gameState.score;
                 elements.maxStreak.textContent = gameState.maxStreak;
                 elements.gameOverScreen.style.display = 'flex';
-                elements.pauseButton.classList.add('hidden');
                 elements.scoreSubmit.classList.remove('hidden');
             }
             
@@ -564,22 +603,13 @@
                 elements.scoreSubmit.classList.add('hidden');
             }
             
-            // 事件监听
+            // 事件监听：移除暂停按钮和空格键暂停事件
             elements.startButton.addEventListener('click', startGame);
-            elements.pauseButton.addEventListener('click', togglePause);
             elements.restartButton.addEventListener('click', () => {
                 elements.gameOverScreen.style.display = 'none';
                 startGame();
             });
             elements.submitScore.addEventListener('click', submitScore);
-            
-            // 键盘控制：空格键暂停/继续
-            document.addEventListener('keydown', (e) => {
-                if (e.key === ' ' && gameState.gameRunning) {
-                    e.preventDefault();
-                    togglePause();
-                }
-            });
         });
     </script>
 </body>
