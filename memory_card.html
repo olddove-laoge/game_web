@@ -620,8 +620,6 @@
                 document.getElementById('score-submit').classList.add('hidden');
                 // 清空输入框
                 document.getElementById('player-name').value = '';
-                // 提交成功提示
-                alert(`成绩提交成功！${playerName} - 翻牌次数：${moves} - 用时：${timeValue.textContent}`);
             });
 
             // 提交成绩函数
@@ -631,6 +629,7 @@
                 // 按「翻牌次数」升序排序（记忆游戏以次数少为优）
                 leaderboard.sort((a, b) => a.moves - b.moves || a.time - b.time);
                 localStorage.setItem(`${game}_leaderboard`, JSON.stringify(leaderboard));
+                initGame(boardSize)
             }
             
             // 打乱数组顺序
